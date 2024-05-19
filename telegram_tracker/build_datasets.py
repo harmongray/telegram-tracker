@@ -9,6 +9,9 @@ import glob
 import time
 import csv
 import sys
+import json
+import glob
+import time
 import os
 
 # import submodules
@@ -177,6 +180,7 @@ def main():
 
         pre_sort = {} 
         post_sort = {}
+        
         for idx, item in enumerate(messages):
             '''
 
@@ -378,6 +382,20 @@ def main():
                 # ################## #
 
                 # create dataframe
+                res = [response]
+                df = pd.DataFrame.from_dict(res)
+
+                # order df msgs data columns
+                df = df[msgs_data_columns].copy()
+
+                # update CSV file
+                df.to_csv(
+                    msgs_file_path,
+                    encoding='utf-8',
+                    header=not os.path.isfile(msgs_file_path),
+                    index=False,
+                    mode='a'
+                )
 
             # Update pbar
             pbar.update(1)
