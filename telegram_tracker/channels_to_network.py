@@ -56,7 +56,7 @@ def main():
 
     # Read collected chats data
     print('Creating network graph')
-    chats_file_path = f'{main_path}/collected_chats.csv'
+    chats_file_path = f'{main_path}/counter.csv'
     chats_file = pd.read_csv(
         chats_file_path,
         encoding='utf-8'
@@ -144,7 +144,7 @@ def main():
         G,
         pos,
         font_size=9,
-        font_family='georgia',
+        font_family='Arial',
         bbox={'facecolor': 'white', 'alpha': 0.5, 'edgecolor': '#373737'}
     )
 
