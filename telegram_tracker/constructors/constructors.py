@@ -57,34 +57,3 @@ class TGResponse(msgspec.Struct):
 
 
 
-# put lowest level structs up here:
-## Peer Id structs
-#class PeerId(msgspec.Struct):
-#    _: str
-
-#class PeerChannel(PeerId):
-#    channel_id: int
-
-#class PeerUser(PeerId):
-#    user_id: int
-
-#class Fwd_from(msgspec.Struct):
-#    _: str
-#    date: str
-#    imported: bool
-#    from_id: PeerId
-#    from_name: PeerId ## may need a set( if null ) operation / check return value of Peer_id
-#    channel_post: int
-#    post_author: int
-#    saved_from_peer: PeerId ## may need a set( if null ) operation
-#    saved_from_msg_id: int
-#    saved_from_id: PeerId ## may need a set( if null ) operation
-#    psa_type: str
-
-
-
-# full message struct
-
-
-
-

@@ -8,7 +8,6 @@ import json
 import glob
 import time
 import csv
-import sys
 import json
 import glob
 import time
@@ -174,9 +173,10 @@ def main():
             'channel_name': username
         }
 
+        # testing stored as an array of key-value pairs in 'msg' to handle perfectly with msgspec 
         finals = {}
 
-        testing = { 'msg': [] }
+        full_messages = { 'msg': [] }
 
         for idx, item in enumerate(messages):
             '''
@@ -231,6 +231,7 @@ def main():
                 response['forward_msg_date'] = None
                 response['forward_msg_date_string'] = None
                 response['forward_msg_link'] = None
+                
                 if forward_attrs:
                     response = get_forward_attrs(
                         forward_attrs,
@@ -326,20 +327,15 @@ def main():
                 response['venue_provider'] = None
                 response = get_geo_attrs(item['media'], response)
 
-                # build appropriate response:
-                # note: this acts as a filter AND an entry to json deserialization
+                
+                # this acts as a filter AND json deserialization
                 finals = TGResponse(response)
                 
-                # encode it:
+                # encode it (do we really need this?) 
                 finals = msgspec.json.encode(finals)
                 
-                # decode it back:
+                # decode it back (again, do we really need this? might be overkilling?)
                 finals = msgspec.json.decode(finals)
-                
-                # Might need to bring this back later?
-                #finals = msgspec.json.encode(finals)
-                
-                testing['msg'].append(finals)
 
                 # create dataframe
                 res = [response]
@@ -356,6 +352,8 @@ def main():
                     index=False,
                     mode='a'
                 )
+                # append it to 'msg':
+                full_messages['msg'].append(finals)
 
             # Update pbar
             pbar.update(1)
@@ -363,24 +361,22 @@ def main():
         # Close pbar connection
         pbar.close()
 
-        print('Writing .csv...')
-        print('\n')
-
+        # 
         with open(msgs_file_path, mode='a+', newline='') as file:
 
-            h2 = testing['msg'][0]
-            h1 = h2['channel_name']
-            h0 = h1.keys()
+            single = full_messages['msg'][0]
+            ch_name = single['channel_name']
+            csv_field_names = ch_name.keys()
 
-            writer = csv.DictWriter(file, fieldnames=h0)
+            writer = csv.DictWriter(file, fieldnames=csv_field_names)
             writer.writeheader()
 
-            for one in testing['msg']:
+            for one in full_messages['msg']:
                 fin = one['channel_name']
                 writer.writerow(fin)
 
-        print('-- END --')
-        print('')
+
+            
 
     data.to_excel(
             chats_file_path.replace('.csv', '.xlsx'),
