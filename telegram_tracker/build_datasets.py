@@ -17,9 +17,10 @@ import os
 from tqdm import tqdm
 
 
-# import local submodules
+# local submodules
 from .constructors.constructors import TGMessages, TGResponse
 
+# local definitions
 from .utils.definitions import (
     chats_dataset_columns, clean_msg, msg_attrs, get_forward_attrs, get_reply_attrs,
     get_url_attrs, get_document_attrs, get_poll_attrs, get_contact_attrs,
@@ -337,21 +338,6 @@ def main():
                 # decode it back (again, do we really need this? might be overkilling?)
                 finals = msgspec.json.decode(finals)
 
-                # create dataframe
-                res = [response]
-                df = pd.DataFrame.from_dict(res)
-
-                # order df msgs data columns
-                df = df[msgs_data_columns].copy()
-
-                # update CSV file
-                df.to_csv(
-                    msgs_file_path,
-                    encoding='utf-8',
-                    header=not os.path.isfile(msgs_file_path),
-                    index=False,
-                    mode='a'
-                )
                 # append it to 'msg':
                 full_messages['msg'].append(finals)
 
