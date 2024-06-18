@@ -101,9 +101,15 @@ def main():
         print(f'Reading data from channel -> {username}')
 
         # read JSON file
-        with open(f, encoding='utf-8', mode='r') as fl:
-            obj = json.load(fl)
-            fl.close()
+
+        try: 
+            with open(f, encoding='utf-8', mode='r') as fl:
+                obj = json.load(fl)
+                fl.close()
+
+        except json.JSONDecodeError as e:
+            print("JSON Decoding Error: Skipping this file")
+            pass
 
         '''
 
@@ -347,19 +353,33 @@ def main():
         # Close pbar connection
         pbar.close()
 
-        # 
-        with open(msgs_file_path, mode='a+', newline='') as file:
+        channel_name = full_messages['msg'][0]['channel_name']['channel_name']
+        print(channel_name)
+        channel_path = os.path.join('./output/data/', f'{channel_name}/', f'{channel_name}_flat_messages.csv')
 
-            single = full_messages['msg'][0]
-            ch_name = single['channel_name']
-            csv_field_names = ch_name.keys()
+        #
+        try:
+            with open(channel_path, mode='a+', newline='') as file:
 
-            writer = csv.DictWriter(file, fieldnames=csv_field_names)
-            writer.writeheader()
+                single = full_messages['msg'][0]
+                ch_name = single['channel_name']
+                csv_field_names = ch_name.keys()
 
-            for one in full_messages['msg']:
-                fin = one['channel_name']
-                writer.writerow(fin)
+                writer = csv.DictWriter(file, fieldnames=csv_field_names)
+                writer.writeheader()
+
+                for one in full_messages['msg']:
+                    fin = one['channel_name']
+                    writer.writerow(fin)
+
+        except FileNotFoundError:
+            print("Incomplete channel directory - skipping.")
+            pass
+
+        except Exception as e:
+            print("Other unexpected exception - skipping.")
+            pass
+
 
 
             
