@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pdb
 
 # Import modules
 import pandas as pd
@@ -246,6 +247,7 @@ def msg_attrs(msg, res):
 	'''
 	'''
 	t = msg['from_id']
+
 	if t:
 		# main peer attr
 		attr = t['_']
@@ -272,62 +274,65 @@ def get_channel_name(channel_id, channels):
 	'''
 	channel_name = None
 	try:
-		channel_name = channels[
-			channels['id'] == channel_id
-		]['username'].iloc[0]
+		channel_name = channels['username'][0]
+	
 	except IndexError:
 		pass
 
 	return channel_name
 
-# Get forward attrs
+
 def get_forward_attrs(msg, res, channels_data):
-	'''
-	'''
-	date = msg['date']
-	msg_id = msg['channel_post']
+    '''
+    '''
 
-	# get from id value
-	from_id = msg['from_id']
-	if from_id:
+    date = msg['date']
+    msg_id = msg['channel_post']
 
-		# parser
-		parser = {
-			'PeerUser': 'user_id',
-			'PeerChat': 'chat_id',
-			'PeerChannel': 'channel_id'
-		}
+    from_id = msg['from_id']
 
-		attr = from_id['_']
-		attr_id = parser[attr]
-		attr_id_value = from_id[attr_id]
+    if from_id:
+        parser = {
+            'PeerUser': 'user_id',
+            'PeerChat': 'chat_id',
+            'PeerChannel': 'channel_id'
+        }
 
-		channel_name = get_channel_name(attr_id_value, channels_data)
-	else:
-		attr = None
-		attr_id_value = None
-		channel_name = None
+        attr = from_id['_']
+        attr_id = parser[attr]
+        attr_id_value = from_id[attr_id]
 
-	# process dates
-	t = pd.to_datetime(
-		date,
-		yearfirst=True
-	)
 
-	date = t.strftime('%Y-%m-%d %H:%M:%S')
-	date_string = t.strftime('%Y-%m-%d')
+        #channel_name = get_channel_name(attr_id_value)
 
-	res['forward_msg_from_peer_type'] = attr
-	res['forward_msg_from_peer_id'] = attr_id_value
-	res['forward_msg_from_peer_name'] = channel_name
-	res['forward_msg_date'] = date
-	res['forward_msg_date_string'] = date_string
+        # logic for sqlite3 lookup tables could go here:
+        channel_name = 'unidentified'
 
-	if channel_name != None and msg_id != None:
-		n = channel_name
-		res['forward_msg_link'] = f'https://t.me/{n}/{msg_id}'
+    else:
 
-	return res
+        attr = None
+        attr_id_value = None
+        channel_name = None
+
+    t = pd.to_datetime(
+        date,
+        yearfirst=True
+    )
+
+    date = t.strftime('%Y-%m-%d %H:%M:%S')
+    date_string = t.strftime('%Y-%m-%d')
+
+    res['forward_msg_from_peer_type'] = attr
+    res['forward_msg_from_peer_id'] = attr_id_value
+    res['forward_msg_from_peer_name'] = 'unidentified'
+    res['forward_msg_date'] = date
+    res['forward_msg_date_string'] = date_string
+
+    if channel_name is not None and msg_id is not None:
+        n = channel_name
+        res['forward_msg_link'] = f'https://t.me/{n}/{msg_id}'
+
+    return res
 
 # Get reply attrs
 def get_reply_attrs(msg, res, username):
@@ -349,41 +354,35 @@ def get_netloc(value):
 	N = urlparse(value).netloc
 	return N.replace('www.', '')
 
-# Get URL attrs
-def get_url_attrs(media, res):
-	'''
-	Type WebPage
 
-	Source: https://core.telegram.org/constructor/messageMediaWebPage
-	Telethon: https://tl.telethon.dev/constructors/web_page.html
-	
-	'''
-	has_url = 0
-	url = None
-	domain = None
-	url_title = None
-	url_description = None
-	if res['media_type'] == 'MessageMediaWebPage':
-		_type = media['webpage']['_']
-		if _type == 'WebPage':
-			url = media['webpage']['url']
-			if url:
-				has_url = 1
 
-				# get domain
-				domain = get_netloc(url)
+def get_url_attrs(media, response):
 
-				# title
-				url_title = media['webpage']['title']
-				url_description = media['webpage']['description']
+    has_url = 0
+    url = None
+    domain = None
+    url_title = None
+    url_description = None
 
-	res['has_url'] = has_url
-	res['url'] = url
-	res['domain'] = domain
-	res['url_title'] = url_title
-	res['url_description'] = url_description
+    if response['media_type'] == 'MessageMediaWebPage':
 
-	return res
+        d_type = media['media']['_']
+        if d_type == 'WebPage':
+            if url:
+                has_url = 1
+                
+                domain = get_netloc(url)
+
+                url_title = d_type['webpage']['description']
+
+        response['has_url'] = has_url
+        response['url'] = url
+        response['domain'] = domain
+        response['url_title'] = url_title
+        response['url_description'] = url_description
+
+    return response
+
 
 # Get document attrs
 def get_document_attrs(media, res):

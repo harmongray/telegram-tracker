@@ -53,7 +53,7 @@ class TGMessages(msgspec.Struct):
     venue_provider: str | None = None
 
 class TGResponse(msgspec.Struct):
-    channel_name: TGMessages
+    bulk_channel: TGMessages
 
 
 
