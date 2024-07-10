@@ -87,13 +87,45 @@ def main():
 
 
 
-    # Settings:
+    # Path Settings:
+
     # Collect JSON files
-    json_files_path = f'{main_path}/**/*_messages.json'
-    json_files = glob.glob(
-        os.path.join(json_files_path),
-        recursive=True
-    )
+    if not args['input_path']:
+        
+        json_files_path = f'{main_path}/**/*_messages.json'
+        json_files = glob.glob(
+                os.path.join(json_files_path),
+                recursive=True
+                )
+
+    else:
+
+        # check all path case instances:
+        if args['input_path'].endswith != "_messages.json":
+
+            holder = args['input_path']
+            json_files = glob.glob(
+                os.path.join(holder),
+                recursive=True
+                )
+        else:
+
+            json_files_path = args['input_path']
+            json_files = glob.glob(
+                    os.path.join(json_files_path),
+                    recursive=True
+                    )
+
+            if len(json_files_path) == 0:
+
+                try:
+
+                    holder = args['input_path']
+                    json_files_path = f'{holder}_messages.json'
+
+                except Exception as e:
+                    print(e)
+                    pass
 
     # Save dataset
     msgs_file_path = f'{main_path}/msgs_dataset.csv'
@@ -113,6 +145,7 @@ def main():
         print("\n")
 
         # contains tuple of dict and pd.DataFrame (metadata object)
+
         full_obj = processor(json_file)
 
         # list comprehension to grab all the messages:
@@ -128,7 +161,7 @@ def main():
 
         # data output path set with file extension:
         if not args['output_path']:
-
+    
             channel_path = main_path +  channel_name + "_flat_messages" + args['type']
             meta_path = main_path + channel_name + "_metadata" + args['type']
 
@@ -138,23 +171,25 @@ def main():
             channel_path = args['output_path'] + channel_name + "_flat_messages" + args['type']
             meta_path = args['output_path'] + channel_name + "_metadata" + args['type']
 
-        # write specific data structures form args['type']
-        # csv
-        if args['type'] == '.csv':
+            # write specific data structures form args['type']
+            # csv
 
-            df = pd.DataFrame(data_list)
-            df.to_csv(channel_path, index=False)
-            metadata.to_csv(meta_path, index=False)
+            if args['type'] == '.csv':
 
-        # pkl
-        if args['type'] == '.pkl':
+                df = pd.DataFrame(data_list)
+                df.to_csv(channel_path, index=False)
+                metadata.to_csv(meta_path, index=False)
 
-            with open(channel_path, 'wb') as file:
-                pickle.dump(data_list, file)
-                metadata.to_pickle(meta_path)
-                
-            
+            # pkl
+            if args['type'] == '.pkl':
 
+                with open(channel_path, 'wb') as file:
+                    pickle.dump(data_list, file)
+                    metadata.to_pickle(meta_path)
+
+            else:
+
+                continue
         #if args['type'] == '.parquet':
         #    df.to_parquet(channel_path, index=False)
                     
